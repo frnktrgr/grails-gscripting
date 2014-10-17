@@ -38,7 +38,7 @@ class GscriptingService {
 	}
 	
 	def registerScriptRuntimeEnv(String qualifiedName, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext()) {
-		def scriptRuntimeEnv = createScriptRuntimeEnv(qualifiedName, sourcecode, getDslProvider(dslProviderLabel), ctx)
+		def scriptRuntimeEnv = createScriptRuntimeEnv(qualifiedName, sourcecode, dslProviderLabel, ctx)
 		scriptRuntimeEnvs.put(qualifiedName, scriptRuntimeEnv)
 	}
 	
@@ -73,30 +73,30 @@ class GscriptingService {
 		dslProviders.get(label)
 	}
 	
-	def createScriptRuntimeEnv(String label, String sourcecode, IDslProvider dslProvider=new DefaultDslProvider(grailsApplication), IContext ctx=new DefaultContext()) {
-		new ScriptRuntimeEnv(this, label, sourcecode, dslProvider, ctx)
+	def createScriptRuntimeEnv(String label, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext()) {
+		new ScriptRuntimeEnv(this, label, sourcecode, dslProviderLabel, ctx)
 	}
 	
-	Script createScript(String qualifiedName, String sourcecode, IDslProvider dslProvider, IContext ctx) {
+	Script createScript(String qualifiedName, String sourcecode, String dslProviderLabel, IContext ctx) {
 		def name = "grails.plugin.gscripting.script.default.${qualifiedName}".toString()
 		log.trace "creating script ${name} .."
 		def instance = null
 		def shell = new GroovyShell(grailsApplication.classLoader)
 		Script groovyScript = shell.parse(sourcecode, name)
-		initDSL(groovyScript, sourcecode, dslProvider, ctx)
+		initDSL(groovyScript, sourcecode, dslProviderLabel, ctx)
 		return groovyScript
 	}
 	
-	void initDSL(groovy.lang.Script groovyScript, String sourcecode, IDslProvider dslProvider, IContext ctx) {
-		checkCompiletimeConstraints(sourcecode, dslProvider.getAstNodeOperation())
+	void initDSL(groovy.lang.Script groovyScript, String sourcecode, String dslProviderLabel, IContext ctx) {
+		checkCompiletimeConstraints(sourcecode, getDslProvider(dslProviderLabel)?.getAstNodeOperation())
 		// Extend script class
 		ExpandoMetaClass emc = new ExpandoMetaClass(groovyScript.class, false)
-		emc."${dslProvider.getHandler()}" = { Map scriptParams, Closure cl ->
-			cl.delegate = dslProvider?.getDslInstance(scriptParams, ctx)
+		emc."${getDslProvider(dslProviderLabel)?.getHandler()}" = { Map scriptParams=[:], Closure cl ->
+			cl.delegate = getDslProvider(dslProviderLabel)?.getDslInstance(scriptParams, ctx)
 			cl.resolveStrategy = Closure.OWNER_FIRST
 			cl()
 		}
-		dslProvider.addRuntimeConstraints(emc)
+		getDslProvider(dslProviderLabel)?.addRuntimeConstraints(emc)
 		emc.initialize()
 		groovyScript.metaClass = emc
 	}

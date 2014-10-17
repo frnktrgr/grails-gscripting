@@ -15,6 +15,13 @@ class ScriptRuntimeEnv {
 	Script script
 	Boolean locked = false
 	
+	long first = 0
+	long last = 0
+	int runs = 0
+	long min = 0
+	long max = 0
+	double average = 0
+	
 	public ScriptRuntimeEnv(def gscriptingService, String qualifiedName, String sourcecode, IDslProvider dslProvider, IContext ctx) {
 		this.gscriptingService = gscriptingService
 		this.qualifiedName = qualifiedName
@@ -58,8 +65,25 @@ class ScriptRuntimeEnv {
 			instance.locked = false
 		}
 		def endTime = System.currentTimeMillis()
-		log.debug "script ${qualifiedName}#${instanceIndex} took: ${endTime-startTime}ms"
+		def duration = endTime-startTime
+		updateStats(startTime, duration)
+		log.debug "script ${qualifiedName}#${instanceIndex} took: ${duration}ms"
 		return result
+	}
+	
+	def updateStats(long startTime, long duration) {
+		synchronized (this) {
+			runs++
+			first = ((!first)||(first>startTime))?startTime:first
+			last = last<startTime?startTime:last
+			average = average + (duration-average)/runs
+			min = ((!min)||(duration<min))?duration:min
+			max = duration>max?duration:max
+		}
+	}
+	
+	def stats() {
+		[first: first, last:last, runs:runs, min:min, max:max, average:average]
 	}
 		
 }

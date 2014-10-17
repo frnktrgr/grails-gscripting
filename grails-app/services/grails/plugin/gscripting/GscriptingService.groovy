@@ -54,6 +54,14 @@ class GscriptingService {
 		dslProviders.remove(label)
 	}
 	
+	def stats() {
+		def stats = [:]
+		scriptRuntimeEnvs.keySet().each { qualifiedName ->
+			stats[qualifiedName] = scriptRuntimeEnvs.get(qualifiedName)?.stats()
+		}
+		return stats
+	}
+	
 	def getDslProvider(String label) {
 		if (dslProviders.isEmpty()) {
 			registerDslProvider("default", new DefaultDslProvider(grailsApplication))

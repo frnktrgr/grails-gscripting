@@ -3,7 +3,6 @@ package grails.plugin.gscripting.dsl.impl
 import grails.plugin.gscripting.dsl.IContext;
 
 class DefaultContext implements IContext {
-	Map scriptParams = [:]
 	Map callParams = [:]
 	Map metadata = [:]
 	Map state = new DefaultState()

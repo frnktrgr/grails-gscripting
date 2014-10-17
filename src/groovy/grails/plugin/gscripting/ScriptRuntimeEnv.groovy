@@ -8,7 +8,7 @@ class ScriptRuntimeEnv {
 	def gscriptingService
 	String qualifiedName
 	String sourcecode
-	IDslProvider dslProvider
+	String dslProviderLabel
 	IContext ctx
 	def instances
 	
@@ -22,11 +22,11 @@ class ScriptRuntimeEnv {
 	long max = 0
 	double average = 0
 	
-	public ScriptRuntimeEnv(def gscriptingService, String qualifiedName, String sourcecode, IDslProvider dslProvider, IContext ctx) {
+	public ScriptRuntimeEnv(def gscriptingService, String qualifiedName, String sourcecode, String dslProviderLabel, IContext ctx) {
 		this.gscriptingService = gscriptingService
 		this.qualifiedName = qualifiedName
 		this.sourcecode = sourcecode
-		this.dslProvider = dslProvider
+		this.dslProviderLabel = dslProviderLabel
 		this.ctx = ctx
 		instances = []
 	}
@@ -41,7 +41,7 @@ class ScriptRuntimeEnv {
 			if (instanceIndex < 0) {
 				log.debug "script ${qualifiedName} - creating new instance .."
 				def sharedContext = ctx.createSharedContext()
-				def script = gscriptingService.createScript(qualifiedName, sourcecode, dslProvider, sharedContext)
+				def script = gscriptingService.createScript(qualifiedName, sourcecode, dslProviderLabel, sharedContext)
 				instance = [script: script, ctx: sharedContext, locked: false]
 				instances.add(instance)
 				instanceIndex = instances.size()-1

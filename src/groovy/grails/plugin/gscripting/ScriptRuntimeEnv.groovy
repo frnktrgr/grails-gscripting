@@ -21,6 +21,7 @@ class ScriptRuntimeEnv {
 	long min = 0
 	long max = 0
 	double average = 0
+	long total = 0
 	
 	public ScriptRuntimeEnv(def gscriptingService, String qualifiedName, String sourcecode, String dslProviderLabel, IContext ctx) {
 		this.gscriptingService = gscriptingService
@@ -74,16 +75,18 @@ class ScriptRuntimeEnv {
 	def updateStats(long startTime, long duration) {
 		synchronized (this) {
 			runs++
+			total = total + duration
 			first = ((!first)||(first>startTime))?startTime:first
 			last = last<startTime?startTime:last
-			average = average + (duration-average)/runs
 			min = ((!min)||(duration<min))?duration:min
 			max = duration>max?duration:max
+			// average = average + (duration-average)/runs
+			average = total / runs
 		}
 	}
 	
 	def stats() {
-		[first: first, last:last, runs:runs, min:min, max:max, average:average]
+		[first: first, last:last, runs:runs, min:min, max:max, total:total, average:average]
 	}
 		
 }

@@ -1,9 +1,6 @@
 class GscriptingGrailsPlugin {
     def version = "0.0.1"
     def grailsVersion = "2.2 > *"
-    def pluginExcludes = [
-        "grails-app/views/error.gsp"
-    ]
     def title = "Gscripting Plugin"
     def author = "Frank Tröger"
     def authorEmail = "frnktrgr@gmail.com"

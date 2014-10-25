@@ -10,3 +10,5 @@ grails-gscripting-*.zip.sha1
 plugin.xml
 .DS_Store
 *.log
+.classpath
+.project

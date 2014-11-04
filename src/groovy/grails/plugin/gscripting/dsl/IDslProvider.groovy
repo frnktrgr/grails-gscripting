@@ -1,5 +1,7 @@
 package grails.plugin.gscripting.dsl
 
+import grails.plugin.gscripting.ScriptRuntimeEnv;
+
 import org.codehaus.groovy.control.CompilationUnit.PrimaryClassNodeOperation;
 
 interface IDslProvider {
@@ -10,6 +12,6 @@ interface IDslProvider {
 	
 	abstract String getHandler()
 	
-	abstract Object getDslInstance(Map scriptParams, IContext context)
+	abstract Object getDslInstance(Map scriptParams, IContext context, ScriptRuntimeEnv sre)
 	
 }

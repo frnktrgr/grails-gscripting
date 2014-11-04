@@ -2,6 +2,7 @@ package grails.plugin.gscripting.dsl.impl
 
 import org.codehaus.groovy.control.CompilationUnit.PrimaryClassNodeOperation
 
+import grails.plugin.gscripting.ScriptRuntimeEnv;
 import grails.plugin.gscripting.dsl.IContext;
 import grails.plugin.gscripting.dsl.IDslProvider;
 
@@ -25,7 +26,7 @@ class EmptyDslProvider implements IDslProvider {
 	}
 
 	@Override
-	public Object getDslInstance(Map scriptParams, IContext ctx) {
+	public Object getDslInstance(Map scriptParams, IContext ctx, ScriptRuntimeEnv sre) {
 		new EmptyDsl(scriptParams, ctx)
 	}
 

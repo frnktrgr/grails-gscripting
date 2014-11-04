@@ -1,5 +1,5 @@
 class GscriptingGrailsPlugin {
-    def version = "0.0.1"
+    def version = "0.0.2"
     def grailsVersion = "2.2 > *"
     def title = "Gscripting Plugin"
     def author = "Frank Tröger"

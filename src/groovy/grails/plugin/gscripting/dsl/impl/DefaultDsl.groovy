@@ -1,6 +1,8 @@
 package grails.plugin.gscripting.dsl.impl
 
 import org.apache.commons.logging.LogFactory
+
+import grails.plugin.gscripting.ScriptRuntimeEnv;
 import grails.plugin.gscripting.dsl.IContext;
 
 class DefaultDsl implements GroovyInterceptable {
@@ -9,15 +11,17 @@ class DefaultDsl implements GroovyInterceptable {
 	
 	Map scriptParams
 	IContext ctx
+	ScriptRuntimeEnv sre
 	
 	def log
 
 	def app = [:]
 	
-	public DefaultDsl(def grailsApplication, Map scriptParams, IContext ctx) {
+	public DefaultDsl(def grailsApplication, Map scriptParams, IContext ctx, ScriptRuntimeEnv sre) {
 		this.grailsApplication = grailsApplication
 		this.scriptParams = scriptParams
 		this.ctx = ctx
+		this.sre = sre
 		this.log = LogFactory.getLog("grails.plugin.gscripting.script.${ctx.metadata.qualifiedName}".toString());
 		grailsApplication.serviceClasses.each {
 			def bean = grailsApplication.mainContext.getBean(it.propertyName)

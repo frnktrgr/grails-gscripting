@@ -5,20 +5,20 @@ import grails.plugin.gscripting.dsl.IContext;
 class DefaultContext implements IContext {
 	Map callParams = [:]
 	Map metadata = [:]
-	Map state = new DefaultState()
+	Map state = [:]
 	
 	def shared = [:]
 	
 	public void reset() {
 		callParams = [:]
-		state = new DefaultState()
+		state = [:]
 	}
 	
 	@Override
 	public void init(Map callParams, Map state, Map metadata) {
 		this.callParams = callParams
 		this.metadata = metadata
-		this.state = state?:new DefaultState()
+		this.state = state?:[:]
 	}
 	
 	@Override

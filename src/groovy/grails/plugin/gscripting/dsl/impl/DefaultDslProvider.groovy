@@ -2,6 +2,7 @@ package grails.plugin.gscripting.dsl.impl
 
 import org.codehaus.groovy.control.CompilationUnit.PrimaryClassNodeOperation
 
+import grails.plugin.gscripting.ScriptRuntimeEnv;
 import grails.plugin.gscripting.dsl.IContext;
 import grails.plugin.gscripting.dsl.IDslProvider;
 import grails.plugin.gscripting.dsl.ast.DefaultAstNodeOperation;
@@ -30,8 +31,8 @@ class DefaultDslProvider implements IDslProvider {
 	}
 
 	@Override
-	public Object getDslInstance(Map scriptParams, IContext ctx) {
-		new DefaultDsl(grailsApplication, scriptParams, ctx)
+	public Object getDslInstance(Map scriptParams, IContext ctx, ScriptRuntimeEnv sre) {
+		new DefaultDsl(grailsApplication, scriptParams, ctx, sre)
 	}
 
 }

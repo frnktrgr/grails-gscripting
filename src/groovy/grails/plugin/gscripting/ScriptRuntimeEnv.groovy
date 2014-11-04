@@ -10,6 +10,7 @@ class ScriptRuntimeEnv {
 	String sourcecode
 	String dslProviderLabel
 	IContext ctx
+	Object additionalData
 	def instances
 	
 	Script script
@@ -23,12 +24,13 @@ class ScriptRuntimeEnv {
 	double average = 0
 	long total = 0
 	
-	public ScriptRuntimeEnv(def gscriptingService, String qualifiedName, String sourcecode, String dslProviderLabel, IContext ctx) {
+	public ScriptRuntimeEnv(def gscriptingService, String qualifiedName, String sourcecode, String dslProviderLabel, IContext ctx, Object additionalData) {
 		this.gscriptingService = gscriptingService
 		this.qualifiedName = qualifiedName
 		this.sourcecode = sourcecode
 		this.dslProviderLabel = dslProviderLabel
 		this.ctx = ctx
+		this.additionalData = additionalData
 		instances = []
 	}
 	
@@ -40,13 +42,13 @@ class ScriptRuntimeEnv {
 		synchronized (this) {
 			instanceIndex = instances.findIndexOf { !it.locked }
 			if (instanceIndex < 0) {
-				log.debug "script ${qualifiedName} - creating new instance .."
+				log.trace "script ${qualifiedName} - creating new instance .."
 				def sharedContext = ctx.createSharedContext()
-				def script = gscriptingService.createScript(qualifiedName, sourcecode, dslProviderLabel, sharedContext)
+				def script = gscriptingService.createScript(this, sharedContext)
 				instance = [script: script, ctx: sharedContext, locked: false]
 				instances.add(instance)
 				instanceIndex = instances.size()-1
-				log.debug "script ${qualifiedName} - total instances: ${instances.size()}"
+				log.debug "script ${qualifiedName} - created new instance (total: ${instances.size()})"
 			} else {
 				instance = instances[instanceIndex]
 			}
@@ -55,7 +57,7 @@ class ScriptRuntimeEnv {
 		}
 		
 		// init ctx
-		instance.ctx.init(callParams, state, [qualifiedName: qualifiedName, sourcecode: sourcecode,	instanceIndex: instanceIndex])
+		instance.ctx.init(callParams, state, [instanceIndex: instanceIndex])
 		log.debug "running script ${qualifiedName}#${instanceIndex} .."
 		def startTime = System.currentTimeMillis()
 		def result = null

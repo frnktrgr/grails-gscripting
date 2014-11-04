@@ -7,7 +7,6 @@ import grails.plugin.gscripting.dsl.ast.DefaultAstNodeOperation;
 import grails.plugin.gscripting.dsl.impl.DefaultContext;
 import grails.plugin.gscripting.dsl.impl.DefaultDsl;
 import grails.plugin.gscripting.dsl.impl.DefaultDslProvider;
-import grails.plugin.gscripting.dsl.impl.DefaultState;
 import grails.plugin.gscripting.dsl.impl.EmptyDslProvider;
 import grails.plugin.gscripting.dsl.IContext
 import grails.plugin.gscripting.dsl.IDslProvider;
@@ -30,6 +29,7 @@ class GscriptingService {
 	def run(String qualifiedName, Map callParams=[:], Map state=[:]) {
 		def result = null
 		if (scriptRuntimeEnvs.containsKey(qualifiedName)) {
+			log.debug "run sre ${qualifiedName}"
 			result = scriptRuntimeEnvs.get(qualifiedName).run(callParams, state)
 		} else {
 			log.warn "no script with qualifiedName ${qualifiedName} registered"
@@ -37,20 +37,24 @@ class GscriptingService {
 		return result
 	}
 	
-	def registerScriptRuntimeEnv(String qualifiedName, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext()) {
-		def scriptRuntimeEnv = createScriptRuntimeEnv(qualifiedName, sourcecode, dslProviderLabel, ctx)
+	def registerScriptRuntimeEnv(String qualifiedName, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext(), Object additionalData=null) {
+		log.debug "register sre ${qualifiedName}"
+		def scriptRuntimeEnv = createScriptRuntimeEnv(qualifiedName, sourcecode, dslProviderLabel, ctx, additionalData)
 		scriptRuntimeEnvs.put(qualifiedName, scriptRuntimeEnv)
 	}
 	
 	def unregisterScriptRuntimeEnv(String qualifiedName) {
+		log.debug "unregister sre ${qualifiedName}"
 		scriptRuntimeEnvs.remove(qualifiedName)
 	}
 	
 	def registerDslProvider(String label, Object dslProvider) {
+		log.debug "register dsl provider ${label}"
 		dslProviders.put(label, dslProvider)
 	}
 	
 	def unregisterDslProvider(String label) {
+		log.debug "unregister dsl provider ${label}"
 		dslProviders.remove(label)
 	}
 	
@@ -73,30 +77,30 @@ class GscriptingService {
 		dslProviders.get(label)
 	}
 	
-	def createScriptRuntimeEnv(String label, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext()) {
-		new ScriptRuntimeEnv(this, label, sourcecode, dslProviderLabel, ctx)
+	def createScriptRuntimeEnv(String label, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext(), Object additionalData=null) {
+		new ScriptRuntimeEnv(this, label, sourcecode, dslProviderLabel, ctx, additionalData)
 	}
 	
-	Script createScript(String qualifiedName, String sourcecode, String dslProviderLabel, IContext ctx) {
-		def name = "grails.plugin.gscripting.script.default.${qualifiedName}".toString()
+	Script createScript(ScriptRuntimeEnv sre, IContext ctx) {
+		def name = "grails.plugin.gscripting.script.default.${sre.qualifiedName}".toString()
 		log.trace "creating script ${name} .."
 		def instance = null
 		def shell = new GroovyShell(grailsApplication.classLoader)
-		Script groovyScript = shell.parse(sourcecode, name)
-		initDSL(groovyScript, sourcecode, dslProviderLabel, ctx)
+		Script groovyScript = shell.parse(sre.sourcecode, name)
+		initDSL(groovyScript, sre, ctx)
 		return groovyScript
 	}
 	
-	void initDSL(groovy.lang.Script groovyScript, String sourcecode, String dslProviderLabel, IContext ctx) {
-		checkCompiletimeConstraints(sourcecode, getDslProvider(dslProviderLabel)?.getAstNodeOperation())
+	void initDSL(groovy.lang.Script groovyScript, ScriptRuntimeEnv sre, IContext ctx) {
+		checkCompiletimeConstraints(sre.sourcecode, getDslProvider(sre.dslProviderLabel)?.getAstNodeOperation())
 		// Extend script class
 		ExpandoMetaClass emc = new ExpandoMetaClass(groovyScript.class, false)
-		emc."${getDslProvider(dslProviderLabel)?.getHandler()}" = { Map scriptParams=[:], Closure cl ->
-			cl.delegate = getDslProvider(dslProviderLabel)?.getDslInstance(scriptParams, ctx)
+		emc."${getDslProvider(sre.dslProviderLabel)?.getHandler()}" = { Map scriptParams=[:], Closure cl ->
+			cl.delegate = getDslProvider(sre.dslProviderLabel)?.getDslInstance(scriptParams, ctx, sre)
 			cl.resolveStrategy = Closure.OWNER_FIRST
 			cl()
 		}
-		getDslProvider(dslProviderLabel)?.addRuntimeConstraints(emc)
+		getDslProvider(sre.dslProviderLabel)?.addRuntimeConstraints(emc)
 		emc.initialize()
 		groovyScript.metaClass = emc
 	}

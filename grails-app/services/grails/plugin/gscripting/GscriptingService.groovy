@@ -97,7 +97,7 @@ class GscriptingService {
 		ExpandoMetaClass emc = new ExpandoMetaClass(groovyScript.class, false)
 		emc."${getDslProvider(sre.dslProviderLabel)?.getHandler()}" = { Map scriptParams=[:], Closure cl ->
 			cl.delegate = getDslProvider(sre.dslProviderLabel)?.getDslInstance(scriptParams, ctx, sre)
-			cl.resolveStrategy = Closure.OWNER_FIRST
+			cl.resolveStrategy = Closure.DELEGATE_FIRST
 			cl()
 		}
 		getDslProvider(sre.dslProviderLabel)?.addRuntimeConstraints(emc)

@@ -12,29 +12,4 @@ class EmptyDsl implements GroovyInterceptable {
 		this.ctx = ctx
 	}
 	
-	@Override
-	public MetaClass getMetaClass() {
-		return null;
-	}
-
-	@Override
-	public Object getProperty(String arg0) {
-		return null;
-	}
-
-	@Override
-	public Object invokeMethod(String arg0, Object arg1) {
-		return null;
-	}
-
-	@Override
-	public void setMetaClass(MetaClass arg0) {
-
-	}
-
-	@Override
-	public void setProperty(String arg0, Object arg1) {
-
-	}
-
 }

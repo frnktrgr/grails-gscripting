@@ -30,26 +30,15 @@ class DefaultDsl implements GroovyInterceptable {
 	}
 	
 	@Override
-	public MetaClass getMetaClass() {
-		return null;
-	}
-	
-	@Override
-	public void setMetaClass(MetaClass arg0) {
-	}
-	
-	@Override
 	public Object invokeMethod(String name, Object args) {
 //		log.trace "Calling ${name} with ${args} ..."
 		def ret
 //		def startTime = System.currentTimeMillis()
-		try{
-			def calledMethod = DefaultDsl.metaClass.getMetaMethod(name, args)
-			ret = calledMethod?.invoke(this, args)
-		} catch(Throwable t) {
-			t.printStackTrace();
-			throw t
+		def calledMethod = DefaultDsl.metaClass.getMetaMethod(name, args)
+		if(!calledMethod) {
+			throw new MissingMethodException(name, this.getClass(), args)
 		}
+		ret = calledMethod?.invoke(this, args)
 //		def endTime = System.currentTimeMillis()
 //		log.trace "Calling ${name} took ${endTime-startTime}ms"
 		return ret
@@ -62,6 +51,7 @@ class DefaultDsl implements GroovyInterceptable {
 			return  DefaultDsl.metaClass.getProperty(this, name)
 		if(name in DefaultContext.metaClass.properties.name)
 			return DefaultContext.metaClass.getProperty(ctx, name)
+		//throw new MissingPropertyException(name, this.getClass());
 		ctx.state.get(name)
 	}
 	
@@ -74,5 +64,4 @@ class DefaultDsl implements GroovyInterceptable {
 			DefaultContext.metaClass.setProperty(ctx, name, args)
 		ctx.state.put(name,args)
 	}
-
 }

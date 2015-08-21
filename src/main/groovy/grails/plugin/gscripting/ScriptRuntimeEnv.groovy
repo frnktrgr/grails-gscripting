@@ -42,13 +42,13 @@ class ScriptRuntimeEnv {
 		synchronized (this) {
 			instanceIndex = instances.findIndexOf { !it.locked }
 			if (instanceIndex < 0) {
-				log.trace "script ${qualifiedName} - creating new instance .."
+				//log.trace "script ${qualifiedName} - creating new instance .."
 				def sharedContext = ctx.createSharedContext()
 				def script = gscriptingService.createScript(this, sharedContext)
 				instance = [script: script, ctx: sharedContext, locked: false]
 				instances.add(instance)
 				instanceIndex = instances.size()-1
-				log.debug "script ${qualifiedName} - created new instance (total: ${instances.size()})"
+				//log.debug "script ${qualifiedName} - created new instance (total: ${instances.size()})"
 			} else {
 				instance = instances[instanceIndex]
 			}
@@ -58,7 +58,7 @@ class ScriptRuntimeEnv {
 		
 		// init ctx
 		instance.ctx.init(callParams, state, [instanceIndex: instanceIndex])
-		log.debug "running script ${qualifiedName}#${instanceIndex} .."
+		//log.debug "running script ${qualifiedName}#${instanceIndex} .."
 		def startTime = System.currentTimeMillis()
 		def result = null
 		try {
@@ -70,7 +70,7 @@ class ScriptRuntimeEnv {
 		def endTime = System.currentTimeMillis()
 		def duration = endTime-startTime
 		updateStats(startTime, duration)
-		log.debug "script ${qualifiedName}#${instanceIndex} took: ${duration}ms"
+		//log.debug "script ${qualifiedName}#${instanceIndex} took: ${duration}ms"
 		return result
 	}
 	

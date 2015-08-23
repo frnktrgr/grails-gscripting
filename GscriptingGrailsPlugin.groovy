@@ -5,7 +5,7 @@ class GscriptingGrailsPlugin {
     def author = "Frank Tröger"
     def authorEmail = "frnktrgr@gmail.com"
     def description = 'Run Groovy scripts in Grails'
-    def documentation = "https://github.com/frnktrgr/grails-gscripting" //"http://grails.org/plugin/gscripting"
+    def documentation = "https://github.com/frnktrgr/grails-gscripting/tree/grails2"
     def license = "APACHE"
     def issueManagement = [ system: "GITHUB", url: "https://github.com/frnktrgr/grails-gscripting/issues" ]
     def scm = [ url: "https://github.com/frnktrgr/grails-gscripting" ]

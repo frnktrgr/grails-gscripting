@@ -13,3 +13,5 @@ plugin.xml
 .classpath
 .project
 *.class
+.gradle/
+build/

@@ -1,7 +1,11 @@
 package grails.plugin.gscripting
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 import grails.plugin.gscripting.dsl.ast.DefaultAstNodeOperation;
 import grails.plugin.gscripting.dsl.impl.DefaultContext;
@@ -25,6 +29,30 @@ class GscriptingService {
 	
 	ConcurrentHashMap<String, IDslProvider> dslProviders = new ConcurrentHashMap<String, Object>()
 	ConcurrentHashMap<String, ScriptRuntimeEnv> scriptRuntimeEnvs = new ConcurrentHashMap<String, Object>()
+	
+	ExecutorService executor
+	
+	def getExecutor() {
+		if (executor) {
+			return executor
+		}
+		log.debug "creating new executor cached thread pool ..."
+		executor = Executors.newCachedThreadPool()
+		return executor
+	}
+	
+	FutureTask execute(String qualifiedName, Map callParams=[:], Map state=[:], Closure callback=null) {
+		FutureTask futureTask = null
+		if (scriptRuntimeEnvs.containsKey(qualifiedName)) {
+			log.debug "run async sre ${qualifiedName}"
+			Callable callable = new CallableScript(scriptRuntimeEnvs.get(qualifiedName), callParams, state, callback)
+			futureTask = new FutureTask(callable)
+			getExecutor().execute(futureTask)
+		} else {
+			log.warn "no script with qualifiedName ${qualifiedName} registered"
+		}
+		return futureTask
+	}
 	
 	def run(String qualifiedName, Map callParams=[:], Map state=[:]) {
 		def result = null

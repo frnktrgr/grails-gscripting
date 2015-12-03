@@ -14,6 +14,7 @@ import grails.plugin.gscripting.dsl.impl.DefaultDslProvider;
 import grails.plugin.gscripting.dsl.impl.EmptyDslProvider;
 import grails.plugin.gscripting.dsl.IContext
 import grails.plugin.gscripting.dsl.IDslProvider;
+import grails.plugin.gscripting.dsl.IDslResolveStrategyAwareProvider;
 import groovy.lang.GroovyClassLoader.ClassCollector
 import groovy.lang.GroovyClassLoader.InnerLoader
 
@@ -125,7 +126,11 @@ class GscriptingService {
 		ExpandoMetaClass emc = new ExpandoMetaClass(groovyScript.class, false)
 		emc."${getDslProvider(sre.dslProviderLabel)?.getHandler()}" = { Map scriptParams=[:], Closure cl ->
 			cl.delegate = getDslProvider(sre.dslProviderLabel)?.getDslInstance(scriptParams, ctx, sre)
-			cl.resolveStrategy = Closure.DELEGATE_FIRST
+			if (getDslProvider(sre.dslProviderLabel) instanceof IDslResolveStrategyAwareProvider) {
+				cl.resolveStrategy = ((IDslResolveStrategyAwareProvider)getDslProvider(sre.dslProviderLabel)).getResolveStrategy()
+			} else {
+				cl.resolveStrategy = Closure.DELEGATE_FIRST
+			}
 			cl()
 		}
 		getDslProvider(sre.dslProviderLabel)?.addRuntimeConstraints(emc)

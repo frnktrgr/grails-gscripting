@@ -29,6 +29,7 @@ class GscriptingService {
 	def grailsApplication
 	
 	ConcurrentHashMap<String, IDslProvider> dslProviders = new ConcurrentHashMap<String, Object>()
+	ConcurrentHashMap<String, ScriptRuntimeEnv> dslProviderScriptRuntimeEnvs = new ConcurrentHashMap<String, Object>()
 	ConcurrentHashMap<String, ScriptRuntimeEnv> scriptRuntimeEnvs = new ConcurrentHashMap<String, Object>()
 	
 	ExecutorService executor
@@ -76,15 +77,44 @@ class GscriptingService {
 		log.debug "unregister sre ${qualifiedName}"
 		scriptRuntimeEnvs.remove(qualifiedName)
 	}
+
+	def registerDslProviderFromScriptRuntimeEnv(qualifiedName) {
+		def result = null
+		if (dslProviderScriptRuntimeEnvs.containsKey(qualifiedName)) {
+			log.debug "run dpsre ${qualifiedName}"
+			result = dslProviderScriptRuntimeEnvs.get(qualifiedName).run()
+			registerDslProvider(qualifiedName, result)
+		} else {
+			log.warn "no dpscript with qualifiedName ${qualifiedName} registered"
+		}
+	}
+	
+	def registerDslProviderScriptRuntimeEnv(String qualifiedName, String sourcecode, String dslProviderLabel="default", IContext ctx=new DefaultContext(), Object additionalData=null) {
+		log.debug "register dpsre ${qualifiedName}"
+		def dslProviderScriptRuntimeEnv = createScriptRuntimeEnv(qualifiedName, sourcecode, dslProviderLabel, ctx, additionalData)
+		dslProviderScriptRuntimeEnvs.put(qualifiedName, dslProviderScriptRuntimeEnv)
+		registerDslProviderFromScriptRuntimeEnv(qualifiedName)
+	}
+	
+	def unregisterDslProviderScriptRuntimeEnv(String qualifiedName) {
+		log.debug "unregister dpsre ${qualifiedName}"
+		dslProviderScriptRuntimeEnvs.remove(qualifiedName)
+		unregisterDslProvider(qualifiedName)
+	}
 	
 	def registerDslProvider(String label, Object dslProvider) {
 		log.debug "register dsl provider ${label}"
 		dslProviders.put(label, dslProvider)
+		dslProviderScriptRuntimeEnvs.findAll{ it.value.dslProviderLabel == label }.each { registerDslProviderFromScriptRuntimeEnv(it.key)  }
 	}
 	
 	def unregisterDslProvider(String label) {
 		log.debug "unregister dsl provider ${label}"
 		dslProviders.remove(label)
+		if (dslProviderScriptRuntimeEnvs.containsKey(label)) {
+			log.debug "unregister dpsre ${qualifiedName}"
+			dslProviderScriptRuntimeEnvs.remove(label)
+		}
 	}
 	
 	def stats() {

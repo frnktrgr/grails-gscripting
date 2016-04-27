@@ -88,8 +88,8 @@ class GscriptingServiceSpec extends Specification {
 		def result = [:]
 		service.registerScriptRuntimeEnv("foo", "process {println(ctx.callParams.foo+' is going to sleep ...'); sleep(ctx.callParams.time); println(ctx.callParams.foo+' woke up'); return ctx.callParams.time;}")
 		def futureTask = service.execute("foo", [foo:"foo", time:5000], [:])
-		service.execute("foo", [foo:"bar", time:2000], [:], { result.bar = it; println "lol: ${it}" })
-		result.foo = futureTask.get()
+		service.execute("foo", [foo:"bar", time:2000], [:], { result.bar = it.result; println "lol: ${it.result}" })
+		result.foo = futureTask.get()?.result
 		println "got future task"
 
 		expect:

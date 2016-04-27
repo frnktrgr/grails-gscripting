@@ -18,11 +18,12 @@ class CallableScript implements Callable {
 
 	@Override
 	public Object call() throws Exception {
-		def result = scriptRuntimeEnv.run(callParams, state)
+		def returnValue = [scriptRuntimeEnv:scriptRuntimeEnv, callParams:callParams, state:state, result:null]
+		returnValue.result = scriptRuntimeEnv.run(callParams, state)
 		if (callback) {
-			callback.call(result)
+			callback.call(returnValue)
 		}
-		return result
+		return returnValue
 	}
 	
 }

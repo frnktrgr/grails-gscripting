@@ -151,7 +151,10 @@ class GscriptingService {
 	}
 	
 	void initDSL(groovy.lang.Script groovyScript, ScriptRuntimeEnv sre, IContext ctx) {
-		checkCompiletimeConstraints(sre.sourcecode, getDslProvider(sre.dslProviderLabel)?.getAstNodeOperation())
+		def astNodeOperation = getDslProvider(sre.dslProviderLabel)?.getAstNodeOperation()
+		if (astNodeOperation) {
+			checkCompiletimeConstraints(sre.sourcecode, getDslProvider(sre.dslProviderLabel)?.getAstNodeOperation())
+		}
 		// Extend script class
 		ExpandoMetaClass emc = new ExpandoMetaClass(groovyScript.class, false)
 		emc."${getDslProvider(sre.dslProviderLabel)?.getHandler()}" = { Map scriptParams=[:], Closure cl ->
@@ -175,7 +178,7 @@ class GscriptingService {
 		def inputStream = new ByteArrayInputStream(bytes)
 		// Create CompilationUnit with custom ASTNodeOperation
 		def codeSource = new GroovyCodeSource(sourcecode,"temp.groovy", "http://grails.plugin/dsl")
-		def classLoader = new GroovyClassLoader()
+		def classLoader = new GroovyClassLoader(grailsApplication.classLoader)
 		CompilationUnit cu = new CompilationUnit(config, codeSource.getCodeSource(), classLoader)
 		if(astNodeOperation)
 			cu.addPhaseOperation(astNodeOperation, Phases.SEMANTIC_ANALYSIS)
@@ -183,7 +186,7 @@ class GscriptingService {
 		SourceUnit su = cu.addSource(codeSource.getName(), inputStream);
 		ClassCollector collector = new ClassCollector(new InnerLoader(classLoader), cu, su);
 		cu.setClassgenCallback(collector);
-		cu.compile(Phases.OUTPUT)
+		cu.compile(Phases.CLASS_GENERATION)
 	}
 	
 }

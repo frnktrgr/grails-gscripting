@@ -19,7 +19,7 @@ plugins {
 project.ext.bintrayUser = bintray_user
 project.ext.bintrayKey = bintray_api_key
 
-version "1.0.6"
+version "1.0.7"
 group "org.grails.plugins"
 
 apply plugin: 'maven-publish'

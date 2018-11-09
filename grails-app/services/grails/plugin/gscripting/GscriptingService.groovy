@@ -112,7 +112,7 @@ class GscriptingService {
 		log.debug "unregister dsl provider ${label}"
 		dslProviders.remove(label)
 		if (dslProviderScriptRuntimeEnvs.containsKey(label)) {
-			log.debug "unregister dpsre ${qualifiedName}"
+			log.debug "unregister dpsre ${label}"
 			dslProviderScriptRuntimeEnvs.remove(label)
 		}
 	}

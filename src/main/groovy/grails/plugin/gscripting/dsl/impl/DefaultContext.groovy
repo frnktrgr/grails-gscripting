@@ -8,23 +8,25 @@ class DefaultContext implements IContext {
 	Map state = [:]
 	
 	def shared = [:]
-	
+
+	@Override
+	public void init(Map callParams, Map state, Map metadata) {
+		this.callParams = callParams
+		this.state = state?:[:]
+		this.metadata = metadata
+	}
+
+	@Override
 	public void reset() {
 		callParams = [:]
 		state = [:]
 	}
-	
-	@Override
-	public void init(Map callParams, Map state, Map metadata) {
-		this.callParams = callParams
-		this.metadata = metadata
-		this.state = state?:[:]
-	}
-	
+
 	@Override
 	public synchronized IContext createSharedContext() {
 		IContext sharedContext =  new DefaultContext()
 		sharedContext.shared = shared
 		return sharedContext
 	}
+
 }

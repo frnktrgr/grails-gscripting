@@ -65,6 +65,7 @@ class ScriptRuntimeEnv {
 			result = instance.script.run()
 		} finally {
 			// unlock instance
+			instance.ctx.reset()
 			instance.locked = false
 		}
 		def endTime = System.currentTimeMillis()
